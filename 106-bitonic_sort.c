@@ -1,91 +1,82 @@
 #include "sort.h"
 
-
 /**
-* swapint - swaps index's of array
-* @l: left or low index to swap
-* @r: right or high index
-*/
-
-void swapint(int *l, int *r)
+ *order - sort the values of an array with respectto the bitonic sort algorithm
+ *@array: array to be sorted
+ *@size: size of the array
+ *@arr:check if the array is sorted
+ * Return: void
+ */
+void order(char arr, int *array, size_t size)
 {
-	int temp;
+	size_t i, j;
+	int mov;
 
-	temp = *l;
-	*l = *r;
-	*r = temp;
-}
-
-/**
-* b_merge - bitonic merge
-* @array: Array slice being merged
-* @low: lowest index
-* @count: Count of slice
-* @dir: Direction, ascending 1 descending 0
-* @size: size of total array for printing
-*/
-
-void b_merge(int *array, int low, int count, int dir, size_t size)
-{
-	int i, n;
-
-	if (count > 1)
+	j = size / 2;
+	for (i = 0; i < j; i++)
 	{
-		n = count / 2;
-		for (i = low; i < low + n; i++)
+		if ((array[i] > array[i + j]) == arr)
 		{
-			if (((array[i] > array[i + n]) && dir == 1) ||
-			(dir == 0 && (array[i] < array[i + n])))
-				swapint(&array[i], &array[i + n]);
+			mov = array[i];
+			array[i] = array[i + j];
+			array[i + j] = mov;
 		}
-		b_merge(array, low, n, dir, size);
-		b_merge(array, low + n, n, dir, size);
 	}
 }
-
 /**
-* b_sort - bitonic recursive sort
-* @array: array to sort
-* @low: lowest index
-* @count: Count of slice
-* @dir: Direction, ascending 1 descending 0
-* @size: size of total array for printing
-*/
-
-void b_sort(int *array, int low, int count, int dir, size_t size)
+ * merge_array - funcion que fusiona dos arrays, es recursiva
+ * @array: fusion to array
+ * @size: size of the array
+ * @arr:check if the array is sorted
+ */
+void merge_array(char arr, int *array, size_t size)
 {
-	int n;
-
-	if (count > 1)
+	if (size < 2)
 	{
-		n = count / 2;
-		printf("Merging [%d/%d] ", count, (int)size);
-		if (dir == 1)
-			printf("(UP):\n");
-		else
-			printf("(DOWN):\n");
-		print_array(array + low, count);
-		b_sort(array, low, n, 1, size);
-		b_sort(array, low + n, n, 0, size);
-		b_merge(array, low, count, dir, size);
-		printf("Result [%d/%d] ", count, (int)size);
-		if (dir == 1)
-			printf("(UP):\n");
-		else
-			printf("(DOWN):\n");
-		print_array(array + low, count);
+		return;
 	}
+
+	order(arr, array, size);
+	merge_array(arr, array, size / 2);
+	merge_array(arr, array + (size / 2), size / 2);
 }
 
 /**
-* bitonic_sort - Sorts array using bitonic algo
-* @array: Array to sort
-* @size: Size of array
-*/
+ *bitonic_recursive - sort the values of an array with respectto
+*the bitonic sort algorithm
+ *@array: array to be sorted
+ *@size: size of the array
+ *@i:size
+ *@arr:check if the array is sorted
+ */
+void bitonic_recursive(char arr, int *array, size_t size, size_t i)
+{
+	if (size < 2)
+	{
+		return;
+	}
 
+	printf("Merging [%lu/%lu] (%s):\n", size, i, (arr == 1) ? "UP" : "DOWN");
+	print_array(array, size);
+
+	bitonic_recursive(1, array, size / 2, i);
+
+	bitonic_recursive(0, array + (size / 2), size / 2, i);
+
+	merge_array(arr, array, size);
+
+	printf("Result [%lu/%lu] (%s):\n", size, i, (arr == 1) ? "UP" : "DOWN");
+	print_array(array, size);
+
+}
+
+/**
+ *bitonic_sort - sort the values of an array with respectto
+ *@array: array sorted
+ *@size: size of the array
+ * Return: void
+ */
 void bitonic_sort(int *array, size_t size)
 {
-	if (array == NULL || size < 2)
-		return;
-	b_sort(array, 0, size, 1, size);
+	bitonic_recursive(1, array, size, size);
 }

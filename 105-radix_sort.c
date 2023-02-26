@@ -1,92 +1,70 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <math.h>
 #include "sort.h"
 
-/**
- * int_array_init - initializes an int array of size size filled with 0
- *
- * @size: the wanted size of the array
- *
- * Return: the new filled array, or NULL on failure
- */
-
-int *int_array_init(size_t size)
-{
-	int *new = NULL;
-	size_t i;
-
-	new = malloc(sizeof(int) * size);
-	if (new)
-	{
-		for (i = 0; i < size; i++)
-			new[i] = 0;
-	}
-
-	return (new);
-}
+#define BASE 10
+#define WIDTH 3
 
 /**
- * count_sort - sorts an array of integers using counting sort
+ * counting_sort - Separate function for counting sort.
+ * @array: array to be sorted.
+ * @size: Number of elements in the array
+ * @d: digit to be sorted.
  *
- * @array: the array of integers
- * @size: the size of the array
- * @exp: the exponent value of 10
+ * Return: void.
  */
-
-void count_sort(int *array, size_t size, int exp)
+void counting_sort(int *array, size_t size, int d)
 {
-	int *count = NULL, *output = NULL;
-	size_t i;
+	int count[BASE] = {0};
+	size_t i, j;
+	int *output = malloc(sizeof(int) * size);
 
-	count = int_array_init(10 + 1);
-	if (count)
-	{
-		/* Histogram of the number of times a key occurs within the input */
-		for (i = 0; i < size; i++)
-			count[(array[i] / exp) % 10] += 1;
-
-		/* Prefix sum computation on count to determine the position range */
-		for (i = 1; i <= 10; i++)
-			count[i] += count[i - 1];
-
-		output = int_array_init(size);
-		if (output)
-		{
-			/* Moving each item into its sorted position in the output array */
-			for (i = size - 1; (int)i >= 0; i--)
-			{
-				output[count[(array[i] / exp) % 10] - 1] = array[i];
-				count[(array[i] / exp) % 10] -= 1;
-			}
-
-			for (i = 0; i < size; i++)
-				array[i] = output[i];
-
-			free(output);
-		}
-		free(count);
-	}
-}
-
-/**
- * radix_sort - sorts an array of integers using LSD radix sort
- *
- * @array: the array of integers
- * @size: the size of the array
- */
-
-void radix_sort(int *array, size_t size)
-{
-	int k = -1, exp;
-	size_t i;
-
-	if (size < 2)
+	if (!output)
 		return;
 
 	for (i = 0; i < size; i++)
-		k = array[i] > k ? array[i] : k;
+		count[(array[i] / d) % BASE]++;
 
-	for (exp = 1; k / exp > 0; exp *= 10)
+	for (i = 1; i < BASE; i++)
+		count[i] += count[i - 1];
+
+	for (j = size - 1; (int)j >= 0; j--)
 	{
-		count_sort(array, size, exp);
+		output[count[(array[j] / d) % BASE] - 1] = array[j];
+		count[(array[j] / d) % BASE]--;
+	}
+
+	for (i = 0; i < size; i++)
+		array[i] = output[i];
+
+	free(output);
+}
+
+/**
+ * radix_sort - sorts array of int in ascending order using Radix sort
+ * @array: array to be sorted.
+ * @size: Number of elements in the array
+ *
+ * Return: void.
+ */
+void radix_sort(int *array, size_t size)
+{
+	size_t i;
+	int max_value = 0;
+	int exp = 1;
+
+	if (!array || size < 2)
+		return;
+
+	for (i = 0; i < size; i++)
+		if (array[i] > max_value)
+			max_value = array[i];
+
+	while (max_value / exp > 0)
+	{
+		counting_sort(array, size, exp);
 		print_array(array, size);
+		exp *= BASE;
 	}
 }
